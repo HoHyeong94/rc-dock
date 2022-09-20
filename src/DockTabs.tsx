@@ -65,8 +65,15 @@ export class TabCache {
   }
 
   onCloseClick = (e: React.MouseEvent) => {
-    this.context.dockMove(this.data, null, 'remove');
-    e.stopPropagation();
+    if (this.data.onBeforeClose) {
+      if (this.data.onBeforeClose(e, this.data.id)) {
+        this.context.dockMove(this.data, null, 'remove');
+        e.stopPropagation();
+      }
+    } else {
+      this.context.dockMove(this.data, null, 'remove');
+      e.stopPropagation();
+    }
   };
 
   onDragStart = (e: DragManager.DragState) => {

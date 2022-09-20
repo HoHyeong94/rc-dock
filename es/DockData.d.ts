@@ -168,6 +168,7 @@ export interface TabData extends TabBase, DockDataBase {
      * @deprecated no longer needed
      */
     cacheContext?: React.Context<any>;
+    onBeforeClose?: (e: React.MouseEvent, id: String) => boolean;
 }
 interface PanelLock {
     /** override the default style */
@@ -305,9 +306,9 @@ export interface DockContext {
     getRootElement(): HTMLDivElement;
 }
 /** @ignore */
-export declare const DockContextType: React.Context<DockContext>;
+export declare const DockContextType: any;
 /** @ignore */
-export declare const DockContextProvider: React.Provider<DockContext>;
+export declare const DockContextProvider: any;
 /** @ignore */
-export declare const DockContextConsumer: React.Consumer<DockContext>;
+export declare const DockContextConsumer: any;
 export {};

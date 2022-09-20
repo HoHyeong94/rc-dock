@@ -6,7 +6,7 @@ interface Props {
     boxData: BoxData;
 }
 export declare class DockBox extends React.PureComponent<Props, any> {
-    static contextType: React.Context<DockContext>;
+    static contextType: any;
     context: DockContext;
     _ref: HTMLDivElement;
     getRef: (r: HTMLDivElement) => void;

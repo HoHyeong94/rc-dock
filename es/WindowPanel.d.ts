@@ -4,7 +4,7 @@ interface Props {
     panelData: PanelData;
 }
 export declare class WindowPanel extends React.PureComponent<Props, any> {
-    static contextType: React.Context<DockContext>;
+    static contextType: any;
     context: DockContext;
     _window: Window;
     onOpen: (w: Window) => void;

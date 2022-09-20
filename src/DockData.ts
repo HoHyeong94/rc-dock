@@ -200,6 +200,8 @@ export interface TabData extends TabBase, DockDataBase {
    * @deprecated no longer needed
    */
   cacheContext?: React.Context<any>;
+
+  onBeforeClose?: (e: React.MouseEvent, id: String) => boolean;
 }
 
 interface PanelLock {

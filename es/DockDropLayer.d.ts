@@ -11,7 +11,7 @@ interface DockDropSquareState {
     dropping: boolean;
 }
 export declare class DockDropSquare extends React.PureComponent<DockDropSquareProps, DockDropSquareState> {
-    static contextType: React.Context<DockContext>;
+    static contextType: any;
     context: DockContext;
     state: {
         dropping: boolean;
@@ -28,7 +28,7 @@ interface DockDropLayerProps {
     dropFromPanel: PanelData;
 }
 export declare class DockDropLayer extends React.PureComponent<DockDropLayerProps, any> {
-    static contextType: React.Context<DockContext>;
+    static contextType: any;
     context: DockContext;
     static addDepthSquare(children: React.ReactNode[], mode: DockMode, panelData: PanelData, panelElement: HTMLElement, depth?: number): void;
     render(): React.ReactNode;

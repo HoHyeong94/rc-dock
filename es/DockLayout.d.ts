@@ -100,7 +100,7 @@ export declare class DockLayout extends DockPortalManager implements DockContext
     /** @ignore */
     getDockId(): any;
     /** @inheritDoc */
-    getGroup(name: string): TabGroup;
+    getGroup(name: string): any;
     /**
      * @inheritDoc
      * @param source @inheritDoc
@@ -145,7 +145,7 @@ export declare class DockLayout extends DockPortalManager implements DockContext
      */
     tempLayout: LayoutData;
     setLayout(layout: LayoutData): void;
-    getLayout(): LayoutData;
+    getLayout(): any;
     /** @ignore
      * change layout
      */

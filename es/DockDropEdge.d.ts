@@ -7,7 +7,7 @@ interface DockDropEdgeProps {
     dropFromPanel: PanelData;
 }
 export declare class DockDropEdge extends React.PureComponent<DockDropEdgeProps, any> {
-    static contextType: React.Context<DockContext>;
+    static contextType: any;
     context: DockContext;
     _ref: HTMLDivElement;
     getRef: (r: HTMLDivElement) => void;

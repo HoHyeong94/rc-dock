@@ -10,7 +10,7 @@ interface State {
     draggingHeader: boolean;
 }
 export declare class DockPanel extends React.PureComponent<Props, State> {
-    static contextType: React.Context<DockContext>;
+    static contextType: any;
     context: DockContext;
     _ref: HTMLDivElement;
     getRef: (r: HTMLDivElement) => void;

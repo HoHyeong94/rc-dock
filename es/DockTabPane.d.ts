@@ -6,14 +6,14 @@ interface DockTabPaneProps extends TabPaneProps {
     cached: boolean;
 }
 export default class DockTabPane extends React.PureComponent<DockTabPaneProps, any> {
-    static contextType: React.Context<DockContext>;
+    static contextType: any;
     context: DockContext;
     _ref: HTMLDivElement;
     getRef: (r: HTMLDivElement) => void;
     updateCache(): void;
     visited: boolean;
     _cache: TabPaneCache;
-    render(): JSX.Element;
+    render(): any;
     componentDidMount(): void;
     componentDidUpdate(prevProps: Readonly<DockTabPaneProps>, prevState: Readonly<any>, snapshot?: any): void;
     componentWillUnmount(): void;

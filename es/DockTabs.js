@@ -40,8 +40,16 @@ export class TabCache {
             this._hitAreaRef = r;
         };
         this.onCloseClick = (e) => {
-            this.context.dockMove(this.data, null, 'remove');
-            e.stopPropagation();
+            if (this.data.onBeforeClose) {
+                if (this.data.onBeforeClose(e, this.data.id)) {
+                    this.context.dockMove(this.data, null, 'remove');
+                    e.stopPropagation();
+                }
+            }
+            else {
+                this.context.dockMove(this.data, null, 'remove');
+                e.stopPropagation();
+            }
         };
         this.onDragStart = (e) => {
             let panel = this.data.parent;

@@ -5,7 +5,7 @@ interface Props extends React.HTMLAttributes<HTMLDivElement> {
     mode?: 'horizontal' | 'vertical';
 }
 export declare class DividerBox extends React.PureComponent<Props, any> {
-    static contextType: React.Context<DockContext>;
+    static contextType: any;
     context: DockContext;
     _ref: HTMLDivElement;
     getRef: (r: HTMLDivElement) => void;

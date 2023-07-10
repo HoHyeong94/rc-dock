@@ -9,7 +9,7 @@ var __rest = (this && this.__rest) || function (s, e) {
         }
     return t;
 };
-import React from "react";
+import * as React from "react";
 import * as DragManager from "./DragManager";
 import { GestureState } from "./GestureManager";
 export class DragDropDiv extends React.PureComponent {
@@ -143,7 +143,6 @@ export class DragDropDiv extends React.PureComponent {
         };
         this.onGestureEnd = (e) => {
             let { onGestureEndT } = this.props;
-            let state = new DragManager.DragState(e, this);
             this.removeListeners();
             if (onGestureEndT) {
                 onGestureEndT();
@@ -173,7 +172,6 @@ export class DragDropDiv extends React.PureComponent {
         }
     }
     addDragListeners(event) {
-        let { onDragStartT } = this.props;
         if (event.type === 'touchstart') {
             this.ownerDocument.addEventListener('touchmove', this.onTouchMove);
             this.ownerDocument.addEventListener('touchend', this.onDragEnd);

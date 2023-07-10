@@ -1,11 +1,13 @@
-import React, {CSSProperties, PointerEventHandler} from "react";
-import {DockContext, DockContextType, DockMode, PanelData, TabData, TabGroup} from "./DockData";
+import * as React from "react";
+import {DockContext, DockContextType, PanelData, TabData} from "./DockData";
 import {DockTabs} from "./DockTabs";
-import {AbstractPointerEvent, DragDropDiv} from "./dragdrop/DragDropDiv";
+import {DragDropDiv} from "./dragdrop/DragDropDiv";
 import {DragState} from "./dragdrop/DragManager";
 import {DockDropLayer} from "./DockDropLayer";
 import {getFloatPanelSize, nextZIndex} from "./Algorithm";
 import {DockDropEdge} from "./DockDropEdge";
+import {groupClassNames} from "./Utils";
+import classNames from "classnames";
 
 interface Props {
   panelData: PanelData;
@@ -50,7 +52,6 @@ export class DockPanel extends React.PureComponent<Props, State> {
     if (DockPanel._droppingPanel === this) {
       return;
     }
-    let {panelData} = this.props;
     let dockId = this.context.getDockId();
     let tab: TabData = DragState.getData('tab', dockId);
     let panel: PanelData = DragState.getData('panel', dockId);
@@ -70,9 +71,7 @@ export class DockPanel extends React.PureComponent<Props, State> {
   };
 
   onDragOverOtherPanel() {
-    if (this.state.dropFromPanel) {
-      this.setState({dropFromPanel: null});
-    }
+    this.setState({dropFromPanel: null});
   }
 
   // used both by dragging head and corner
@@ -87,21 +86,24 @@ export class DockPanel extends React.PureComponent<Props, State> {
       this._movingX = x;
       this._movingY = y;
       // hide the panel, but not create drag layer element
-      event.setData({panel: this.props.panelData}, dockId);
+      event.setData({panel: panelData, tabGroup: panelData.group}, dockId);
       event.startDrag(null, null);
       this.onFloatPointerDown();
     } else {
       let tabGroup = this.context.getGroup(panelData.group);
       let [panelWidth, panelHeight] = getFloatPanelSize(this._ref, tabGroup);
 
-      event.setData({panel: panelData, panelSize: [panelWidth, panelHeight]}, dockId);
+      event.setData({panel: panelData, panelSize: [panelWidth, panelHeight], tabGroup: panelData.group}, dockId);
       event.startDrag(null);
     }
     this.setState({draggingHeader: true});
   };
   onPanelHeaderDragMove = (e: DragState) => {
-    let {width, height} = this.context.getLayoutSize();
     let {panelData} = this.props;
+    if (panelData.parent?.mode !== 'float') {
+      return;
+    }
+    let {width, height} = this.context.getLayoutSize();
     panelData.x = this._movingX + e.dx;
     panelData.y = this._movingY + e.dy;
     if (width > 200 && height > 200) {
@@ -120,9 +122,13 @@ export class DockPanel extends React.PureComponent<Props, State> {
     this.forceUpdate();
   };
   onPanelHeaderDragEnd = (e: DragState) => {
-    if (!this._unmounted) {
-      this.setState({draggingHeader: false});
-      this.context.onSilentChange(this.props.panelData.activeId, 'move');
+    this.setState({draggingHeader: false});
+    if (e.dropped === false) {
+      let {panelData} = this.props;
+      if (panelData.parent?.mode === 'float') {
+        // in float mode, the position change needs to be sent to the layout
+        this.context.onSilentChange(this.props.panelData.activeId, 'move');
+      }
     }
   };
 
@@ -226,6 +232,9 @@ export class DockPanel extends React.PureComponent<Props, State> {
       }
     }
 
+    panelData.w = Math.max(panelData.w || 0, panelData.minWidth || 0);
+    panelData.h = Math.max(panelData.h || 0, panelData.minHeight || 0);
+
     this.forceUpdate();
   };
   onPanelCornerDragEnd = (e: DragState) => {
@@ -268,13 +277,7 @@ export class DockPanel extends React.PureComponent<Props, State> {
         heightFlex = panelHeightFlex;
       }
     }
-    let panelClass: string;
-    if (styleName) {
-      panelClass = styleName
-        .split(' ')
-        .map((name) => `dock-style-${name}`)
-        .join(' ');
-    }
+    let panelClass: string = classNames(groupClassNames(styleName))
     let isMax = parent?.mode === 'maximize';
     let isFloat = parent?.mode === 'float';
     let isHBox = parent?.mode === 'horizontal';

@@ -1,3 +1,6 @@
+import classNames from "classnames";
+import {groupClassNames} from "../Utils";
+
 export type DragType = 'left' | 'right' | 'touch';
 
 interface DragDropComponent {
@@ -20,6 +23,7 @@ export class DragState {
   clientY = 0;
   dx = 0;
   dy = 0;
+  dropped: any = false;
 
   constructor(event: MouseEvent | TouchEvent, component: DragDropComponent, init = false) {
     this.event = event;
@@ -125,7 +129,7 @@ export class DragState {
 
   _onDragEnd(canceled: boolean = false) {
     if (_droppingHandlers && _droppingHandlers.onDropT && !canceled) {
-      _droppingHandlers.onDropT(this);
+      this.dropped = _droppingHandlers.onDropT(this);
 
       if (this.component.dragType === 'right') {
         // prevent the next menu event if drop handler is called on right mouse button
@@ -148,6 +152,7 @@ function preventDefault(e: Event) {
 
 
 export type DragHandler = (state: DragState) => void;
+export type DropHandler = (state: DragState) => any;
 
 
 let _dataScope: any;
@@ -171,7 +176,7 @@ function setDroppingHandler(handlers: DragHandlers, state: DragState) {
 interface DragHandlers {
   onDragOverT?: DragHandler;
   onDragLeaveT?: DragHandler;
-  onDropT?: DragHandler;
+  onDropT?: DropHandler;
 }
 
 let _dragListeners: WeakMap<HTMLElement, DragHandlers> = new WeakMap<HTMLElement, DragHandlers>();
@@ -198,7 +203,11 @@ let _draggingIcon: HTMLDivElement;
 function _createDraggingDiv(doc: Document) {
   _draggingDiv = doc.createElement('div');
   _draggingIcon = doc.createElement('div');
-  _draggingDiv.className = 'dragging-layer';
+
+  const tabGroup = (_data && 'tabGroup' in _data ? _data['tabGroup'] : undefined) as string | undefined;
+
+  _draggingDiv.className = classNames(groupClassNames(tabGroup), 'dragging-layer');
+
   _draggingDiv.appendChild(document.createElement('div')); // place holder for dragging element
   _draggingDiv.appendChild(_draggingIcon);
 }
@@ -222,7 +231,6 @@ function createDraggingElement(state: DragState, refElement: HTMLElement, draggi
     draggingWidth = (draggingHtml as HTMLElement).offsetWidth;
     draggingHeight = (draggingHtml as HTMLElement).offsetHeight;
     draggingHtml = (draggingHtml as HTMLElement).outerHTML;
-
   }
   if (draggingHtml) {
     _draggingDiv.firstElementChild.outerHTML = draggingHtml as string;

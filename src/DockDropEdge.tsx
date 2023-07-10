@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import {
   BoxData,
   DockContext,
@@ -7,12 +7,8 @@ import {
   DropDirection,
   PanelData,
   TabData,
-  TabGroup,
-  placeHolderStyle
+  TabGroup
 } from "./DockData";
-import {DockTabs} from "./DockTabs";
-import {Divider, DividerChild} from "./Divider";
-import {DockPanel} from "./DockPanel";
 import {DragDropDiv} from "./dragdrop/DragDropDiv";
 import {DragState} from "./dragdrop/DragManager";
 
@@ -98,7 +94,7 @@ export class DockDropEdge extends React.PureComponent<DockDropEdgeProps, any> {
     while (targetBox && lastDepth < depth) {
       if (targetBox.mode === mode) {
         if (afterPanel) {
-          if (targetBox.children[targetBox.children.length - 1] !== previousTarget) {
+          if (targetBox.children.at(-1) !== previousTarget) {
             // dont go deeper if current target is on different side of the box
             break;
           }

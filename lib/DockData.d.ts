@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from "react";
 import { Filter } from "./Algorithm";
 export interface TabGroup {
     /**
@@ -65,6 +65,10 @@ export interface TabGroup {
      * Override the default flex grow and flex shrink for panel height
      */
     heightFlex?: number;
+    /**
+     * Override the default `moreIcon`
+     */
+    moreIcon?: React.ReactNode;
 }
 /** @ignore */
 export declare const defaultGroup: TabGroup;
@@ -101,6 +105,10 @@ export interface PanelBase {
      * The id of current tab
      */
     activeId?: string;
+    /**
+     * if group is undefined, it will be set to the group name of first tab
+     */
+    group?: string;
     /** float mode only */
     x?: number;
     /** float mode only */
@@ -197,10 +205,6 @@ export interface PanelData extends PanelBase, BoxChild {
     parent?: BoxData;
     tabs: TabData[];
     /**
-     * if group is undefined, it will be set to the group name of first tab
-     */
-    group?: string;
-    /**
      * addition information of a panel,
      * This prevents the panel from being removed when there is no tab inside
      * a locked panel can not be moved to float layer either
@@ -239,6 +243,15 @@ export interface LayoutData extends LayoutBase {
     loadedFrom?: LayoutBase;
 }
 export declare type DropDirection = 'left' | 'right' | 'bottom' | 'top' | 'middle' | 'remove' | 'before-tab' | 'after-tab' | 'float' | 'front' | 'maximize' | 'new-window' | 'move' | 'active' | 'update';
+export interface FloatSize {
+    width: number;
+    height: number;
+}
+export interface FloatPosition extends FloatSize {
+    left: number;
+    top: number;
+}
+export declare type LayoutSize = FloatSize;
 export interface DockContext {
     /** @ignore */
     getDockId(): any;
@@ -250,10 +263,7 @@ export interface DockContext {
         clientY: number;
     }, panelSize?: [number, number]): void;
     /** @ignore */
-    getLayoutSize(): {
-        width: number;
-        height: number;
-    };
+    getLayoutSize(): LayoutSize;
     /** @ignore
      * When a state change happen to the layout that's handled locally, like inside DockPanel or DockBox.
      * It still need to tell the context there is a change so DockLayout can call onLayoutChange callback.
@@ -269,10 +279,10 @@ export interface DockContext {
      * @param direction which direction to drop<br>
      *  - when direction is 'after-tab' or 'before-tab', target must be TabData
      *  - when direction is 'remove' or 'front', target must be null
-     *  - when direction is 'float', target doesnt matter. If this is called directly from code without any user interaction, source must be PanelData with x,y,w,h properties
-     *
+     *  - when direction is 'float', target doesn't matter. If this is called directly from code without any user interaction, source must be PanelData with x,y,w,h properties
+     * @param floatPosition position of float panel, used only when direction="float"
      */
-    dockMove(source: TabData | PanelData, target: string | TabData | PanelData | BoxData | null, direction: DropDirection): void;
+    dockMove(source: TabData | PanelData, target: string | TabData | PanelData | BoxData | null, direction: DropDirection, floatPosition?: FloatPosition): void;
     /**
      * Get the TabGroup defined in defaultLayout
      */
@@ -280,7 +290,7 @@ export interface DockContext {
     /**
      * Find PanelData or TabData by id
      */
-    find(id: string, filter?: Filter): PanelData | TabData | BoxData;
+    find(id: string, filter?: Filter): PanelData | TabData | BoxData | undefined;
     /**
      * Update a tab with new TabData
      * @param id tab id to update
@@ -288,9 +298,9 @@ export interface DockContext {
      * @param makeActive whether to make the tab the active child of parent panel
      * @returns returns false if the tab is not found
      */
-    updateTab(id: string, newTab: TabData, makeActive: boolean): boolean;
+    updateTab(id: string, newTab: TabData | null, makeActive?: boolean): boolean;
     /**
-     * Move focus to a dockpanel near by
+     * Move focus to a dockpanel nearby
      * @param fromElement
      * @param direction
      */

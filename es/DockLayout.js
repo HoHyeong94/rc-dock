@@ -9,8 +9,8 @@ var __rest = (this && this.__rest) || function (s, e) {
         }
     return t;
 };
-import React from "react";
-import ReactDOM from "react-dom";
+import * as React from "react";
+import * as ReactDOM from "react-dom";
 import debounce from 'lodash/debounce';
 import { defaultGroup, DockContextProvider, placeHolderGroup, placeHolderStyle } from "./DockData";
 import { DockBox } from "./DockBox";
@@ -26,6 +26,7 @@ class DockPortalManager extends React.PureComponent {
         super(...arguments);
         /** @ignore */
         this._caches = new Map();
+        this._isMounted = false;
         this.destroyRemovedPane = () => {
             this._pendingDestroy = null;
             let cacheRemoved = false;
@@ -35,7 +36,7 @@ class DockPortalManager extends React.PureComponent {
                     cacheRemoved = true;
                 }
             }
-            if (cacheRemoved) {
+            if (cacheRemoved && this._isMounted) {
                 this.forceUpdate();
             }
         };
@@ -157,8 +158,9 @@ export class DockLayout extends DockPortalManager {
      * @param source @inheritDoc
      * @param target @inheritDoc
      * @param direction @inheritDoc
+     * @param floatPosition @inheritDoc
      */
-    dockMove(source, target, direction) {
+    dockMove(source, target, direction, floatPosition) {
         let layout = this.getLayout();
         if (direction === 'maximize') {
             layout = Algorithm.maximize(layout, source);
@@ -179,8 +181,8 @@ export class DockLayout extends DockPortalManager {
         if (direction === 'float') {
             let newPanel = Algorithm.converToPanel(source);
             newPanel.z = Algorithm.nextZIndex(null);
-            if (this.state.dropRect) {
-                layout = Algorithm.floatPanel(layout, newPanel, this.state.dropRect);
+            if (this.state.dropRect || floatPosition) {
+                layout = Algorithm.floatPanel(layout, newPanel, this.state.dropRect || floatPosition);
             }
             else {
                 layout = Algorithm.floatPanel(layout, newPanel);
@@ -195,7 +197,7 @@ export class DockLayout extends DockPortalManager {
         }
         else if (target) {
             if ('tabs' in target) {
-                // pandel target
+                // panel target
                 if (direction === 'middle') {
                     layout = Algorithm.addTabToPanel(layout, source, target);
                 }
@@ -216,14 +218,7 @@ export class DockLayout extends DockPortalManager {
         }
         if (layout !== this.getLayout()) {
             layout = Algorithm.fixLayoutData(layout, this.props.groups);
-            let currentTabId = null;
-            if (source.hasOwnProperty('tabs')) {
-                currentTabId = source.activeId;
-            }
-            else {
-                // when source is tab
-                currentTabId = source.id;
-            }
+            const currentTabId = source.hasOwnProperty('tabs') ? source.activeId : source.id;
             this.changeLayout(layout, currentTabId, direction);
         }
         this.onDragStateChange(false);
@@ -243,36 +238,36 @@ export class DockLayout extends DockPortalManager {
     updateTab(id, newTab, makeActive = true) {
         var _a;
         let tab = this.find(id, Algorithm.Filter.AnyTab);
-        if (tab) {
-            let panelData = tab.parent;
-            let idx = panelData.tabs.indexOf(tab);
-            if (idx >= 0) {
-                let { loadTab } = this.props;
-                let layout = this.getLayout();
-                if (newTab) {
-                    let activeId = panelData.activeId;
-                    if (loadTab && !('content' in newTab && 'title' in newTab)) {
-                        newTab = loadTab(newTab);
-                    }
-                    layout = Algorithm.removeFromLayout(layout, tab); // remove old tab
-                    panelData = Algorithm.getUpdatedObject(panelData); // panelData might change during removeTab
-                    layout = Algorithm.addTabToPanel(layout, newTab, panelData, idx); // add new tab
-                    panelData = Algorithm.getUpdatedObject(panelData); // panelData might change during addTabToPanel
-                    if (!makeActive) {
-                        // restore the previous activeId
-                        panelData.activeId = activeId;
-                        this.panelToFocus = panelData.id;
-                    }
-                }
-                else if (makeActive && panelData.activeId !== id) {
-                    layout = Algorithm.replacePanel(layout, panelData, Object.assign(Object.assign({}, panelData), { activeId: id }));
-                }
-                layout = Algorithm.fixLayoutData(layout, this.props.groups);
-                this.changeLayout(layout, (_a = newTab === null || newTab === void 0 ? void 0 : newTab.id) !== null && _a !== void 0 ? _a : id, 'update');
-                return true;
-            }
+        if (!tab) {
+            return false;
         }
-        return false;
+        let panelData = tab.parent;
+        let idx = panelData.tabs.indexOf(tab);
+        if (idx >= 0) {
+            let { loadTab } = this.props;
+            let layout = this.getLayout();
+            if (newTab) {
+                let activeId = panelData.activeId;
+                if (loadTab && !('content' in newTab && 'title' in newTab)) {
+                    newTab = loadTab(newTab);
+                }
+                layout = Algorithm.removeFromLayout(layout, tab); // remove old tab
+                panelData = Algorithm.getUpdatedObject(panelData); // panelData might change during removeTab
+                layout = Algorithm.addTabToPanel(layout, newTab, panelData, idx); // add new tab
+                panelData = Algorithm.getUpdatedObject(panelData); // panelData might change during addTabToPanel
+                if (!makeActive) {
+                    // restore the previous activeId
+                    panelData.activeId = activeId;
+                    this.panelToFocus = panelData.id;
+                }
+            }
+            else if (makeActive && panelData.activeId !== id) {
+                layout = Algorithm.replacePanel(layout, panelData, Object.assign(Object.assign({}, panelData), { activeId: id }));
+            }
+            layout = Algorithm.fixLayoutData(layout, this.props.groups);
+            this.changeLayout(layout, (_a = newTab === null || newTab === void 0 ? void 0 : newTab.id) !== null && _a !== void 0 ? _a : id, 'update');
+            return true;
+        }
     }
     /** @inheritDoc */
     navigateToPanel(fromElement, direction) {
@@ -418,6 +413,10 @@ export class DockLayout extends DockPortalManager {
                 portals),
             React.createElement("div", { className: "dock-drop-indicator", style: dropRectStyle })));
     }
+    /** @ignore */
+    componentDidMount() {
+        this._isMounted = true;
+    }
     /** @ignore
      * move focus to panelToFocus
      */
@@ -437,6 +436,7 @@ export class DockLayout extends DockPortalManager {
         (_a = globalThis.removeEventListener) === null || _a === void 0 ? void 0 : _a.call(globalThis, 'resize', this._onWindowResize);
         DragManager.removeDragStateListener(this.onDragStateChange);
         this._onWindowResize.cancel();
+        this._isMounted = false;
     }
     setLayout(layout) {
         this.tempLayout = layout;
